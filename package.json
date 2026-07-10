@@ -1,0 +1,18 @@
+{
+  "name": "subli-premiere-extension",
+  "version": "1.0.0",
+  "description": "Subli - Offline AI Subtitles for Premiere Pro",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "premiere",
+    "subtitles",
+    "ai",
+    "whisper"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {}
+}

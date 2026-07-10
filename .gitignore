@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+ext_models/
+ext_bin_*/
+ext_bin_nvidia/
+v154/
+whisper_v191/
+*.zip
+*.zxp
+*.wav
+*.bin
+*.log

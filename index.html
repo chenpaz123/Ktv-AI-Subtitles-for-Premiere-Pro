@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ktv - AI Subtitles</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/CSInterface.js"></script>
+    <script>
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="logo">Ktv</h1>
+            <p class="subtitle">כתוביות בעברית • פרטי לגמרי • הכל רץ אצלך</p>
+        </header>
+
+        <div class="card action-card">
+            <div class="form-group">
+                <label>טווח</label>
+                <div class="tabs" id="range-tabs">
+                    <button class="tab-btn active" data-value="entire">כל הסיקוונס</button>
+                    <button class="tab-btn" data-value="in_out">בין In ל-Out</button>
+                </div>
+            </div>
+
+            <div class="grid-options">
+                <div class="form-group">
+                    <label>מילים בשורה</label>
+                    <select class="styled-select" id="words-select">
+                        <option value="1">1</option>
+                        <option value="2">2 (מומלץ ל-Shorts)</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="0">ללא הגבלה (רגיל)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>שפה מדוברת בסרטון</label>
+                    <select class="styled-select" id="lang-select">
+                        <option value="he">עברית</option>
+                        <option value="en">אנגלית</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="translate-en">
+                    <span class="checkmark"></span>
+                    תרגם לאנגלית (ייצור כתוביות באנגלית לסרטון בעברית)
+                </label>
+            </div>
+
+            <button id="btn-generate" class="btn-gradient">
+                ✨ צור כתוביות
+            </button>
+            
+            <div id="status-container" class="status-container hidden">
+                <p id="status-text" class="status-text">מוכן! 🎉</p>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="action-buttons" class="action-buttons hidden">
+                    <button class="btn-secondary" id="btn-open-srt">📝 ערוך כתוביות</button>
+                    <button class="btn-secondary" id="btn-show-srt">📁 פתח תיקיית פרויקט</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card settings-card">
+            <div class="accordion-header" id="settings-toggle">
+                <span>הגדרות ⚙️</span>
+                <span class="arrow">◀</span>
+            </div>
+            <div class="accordion-content" id="settings-content">
+                <div class="form-group">
+                    <label for="model-select">בחר מודל שפה:</label>
+                    <select id="model-select" class="styled-select">
+                        <option value="ggml-large-v3-turbo.bin">אנגלית / כללי (Turbo רשמי)</option>
+                        <option value="ivrit-ai-v3-turbo.bin">עברית (Ivrit AI V3 Turbo - מומלץ ומהיר)</option>
+                        <option value="ivrit-ai-2-ggml.bin" selected>עברית (Ivrit AI V2 - כבד והכי מדויק)</option>
+                        <option value="ggml-medium.bin">תרגום לאנגלית (אוטומטי)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="strip-punct">
+                        <span class="checkmark"></span>
+                        הסר סימני פיסוק (מומלץ ל-Shorts/TikTok)
+                    </label>
+                </div>
+
+                <div class="form-group mt-10">
+                    <label for="hardware-select">האצת חומרה (GPU):</label>
+                    <select id="hardware-select" class="styled-select">
+                        <option value="cpu" selected>מעבד רגיל (CPU) - עובד בכל מחשב</option>
+                        <option value="nvidia">NVIDIA GPU (CUDA) - מומלץ (מהיר פי 5)</option>
+                        <option value="amd">AMD / Intel GPU (OpenCL)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>מקומי לחלוטין • שום דבר לא עולה לענן</p>
+        </footer>
+    </div>
+    
+    <script src="js/node_bridge.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
