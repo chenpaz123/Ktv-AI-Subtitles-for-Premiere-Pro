@@ -52,4 +52,9 @@ An Adobe Premiere Pro extension that automatically generates highly accurate, pe
 - [Ivrit.ai](https://huggingface.co/ivrit-ai) - For developing and open-sourcing the incredible Hebrew-optimized language models.
 
 ---
+
+## 🤖 AI-Assisted Development
+This project is part of an AI development portfolio, showcasing the power of human-AI collaboration in software engineering. The entire codebase, architecture, bug fixing, and optimization were pair-programmed alongside an advanced Agentic AI coding assistant.
+
+---
 *Built to save editors hundreds of hours of tedious transcription work.*
