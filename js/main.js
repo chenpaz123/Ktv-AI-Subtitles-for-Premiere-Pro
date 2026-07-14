@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('subli_hardware')) hardwareSelect.value = localStorage.getItem('subli_hardware');
         if (localStorage.getItem('subli_strip') !== null) stripPunct.checked = localStorage.getItem('subli_strip') === 'true';
         if (localStorage.getItem('subli_translate') !== null) translateEn.checked = localStorage.getItem('subli_translate') === 'true';
-    } catch (e) {}
+    } catch (e) { console.warn('Error loading settings from localStorage:', e); }
 
     // Save settings on change
     const saveSettings = () => {
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('subli_hardware', hardwareSelect.value);
             localStorage.setItem('subli_strip', stripPunct.checked);
             localStorage.setItem('subli_translate', translateEn.checked);
-        } catch (e) {}
+        } catch (e) { console.warn('Error saving settings to localStorage:', e); }
     };
 
     [wordsSelect, langSelect, modelSelect, hardwareSelect, stripPunct, translateEn].forEach(el => {

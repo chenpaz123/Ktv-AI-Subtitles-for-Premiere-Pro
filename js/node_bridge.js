@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const child_process = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(child_process.exec);
 
 function getExtDir() {
     return __dirname;
@@ -36,7 +38,7 @@ async function downloadFile(url, destPath, statusCallback, progressLabel) {
             file.on('finish', () => {
                 file.close(() => {
                     if (totalBytes && downloadedBytes < totalBytes) {
-                        try { fs.unlinkSync(destPath); } catch(e) {}
+                        try { fs.unlinkSync(destPath); } catch(e) { console.warn("Failed to clean up incomplete file:", e.message); }
                         reject(new Error(`ההורדה נקטעה באמצע (${Math.floor(downloadedBytes/1024/1024)}MB מתוך ${Math.floor(totalBytes/1024/1024)}MB). אנא נסה שוב.`));
                     } else {
                         resolve(destPath);
@@ -102,7 +104,7 @@ async function ensureWhisperCpp(hardwareMode, statusCallback) {
                 if (error) {
                     reject(new Error("Failed to extract whisper.cpp: " + error.message));
                 } else {
-                    try { fs.unlinkSync(zipPath); } catch (e) {}
+                    try { fs.unlinkSync(zipPath); } catch (e) { console.warn("Failed to delete zipPath:", e.message); }
                     // Find the executable first to know where to put the DLLs
                     const foundExe = findExe(binDir, exeName);
                     if (foundExe) {
@@ -114,8 +116,8 @@ async function ensureWhisperCpp(hardwareMode, statusCallback) {
                             downloadFile("https://github.com/ggerganov/whisper.cpp/releases/download/v1.5.4/whisper-cublas-11.8.0-bin-x64.zip", dllZipPath, statusCallback, 'משלים קבצים')
                             .then(() => {
                                 child_process.exec(`powershell -command "Expand-Archive -Path '${dllZipPath}' -DestinationPath '${path.join(binDir, 'temp_dlls')}' -Force; Copy-Item -Path '${path.join(binDir, 'temp_dlls')}/cublas*.dll', '${path.join(binDir, 'temp_dlls')}/cudart*.dll' -Destination '${exeDir}/' -Force"`, (err) => {
-                                    try { fs.unlinkSync(dllZipPath); } catch(e) {}
-                                    try { fs.rmSync(path.join(binDir, 'temp_dlls'), { recursive: true, force: true }); } catch(e) {}
+                                    try { fs.unlinkSync(dllZipPath); } catch(e) { console.warn("Failed to delete dllZipPath:", e.message); }
+                                    try { fs.rmSync(path.join(binDir, 'temp_dlls'), { recursive: true, force: true }); } catch(e) { console.warn("Failed to remove temp_dlls:", e.message); }
                                     resolve(foundExe);
                                 });
                             }).catch(() => resolve(foundExe)); // resolve anyway if it fails
@@ -158,151 +160,129 @@ async function ensureModel(modelName, statusCallback) {
     return modelPath;
 }
 
-window.nodeProcessAudio = async function(audioPath, modelName, hardwareMode, maxWords, stripPunctuation, lang, isTranslate, statusCallback) {
-    return new Promise(async (resolve, reject) => {
-        try {
+function formatSrtContent(srtContent, stripPunctuation) {
+    if (srtContent.trim() === '') {
+        srtContent = '1\n00:00:00,000 --> 00:00:02,000\n[לא זוהה דיבור]';
+    }
+    
+    srtContent = srtContent.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n');
+    
+    const rtlRegex = /[\u0590-\u05FF]/;
+    const punctRegex = /[.,!?;:"'`´‘’“”„‚«»‹›…()\[\]{}‐-―־׳״-]/g;
+    const lines = srtContent.split('\r\n');
+    
+    function parseTime(timeStr) {
+        const p = timeStr.split(':');
+        const s = p[2].split(',');
+        return parseInt(p[0])*3600 + parseInt(p[1])*60 + parseInt(s[0]) + parseInt(s[1])/1000;
+    }
+    function formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 1000);
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+    }
 
-            // Whisper V3 (Turbo) has a known bug in whisper.cpp where it ignores the -tr flag.
-            // If translation is requested, force the highly stable Medium model which translates perfectly.
-            if (isTranslate) {
-                modelName = 'ggml-medium.bin';
-            }
-
-            const exePath = await ensureWhisperCpp(hardwareMode, statusCallback);
-            const modelPath = await ensureModel(modelName, statusCallback);
-            
-            statusCallback('מתחיל תמלול מקומי בטכנולוגיית AI... אנא המתן', 75);
-            
-            const srtOutputPath = audioPath + ".srt";
-
-            // Execute local AI
-            let cmd = `"${exePath}" -m "${modelPath}" -f "${audioPath}" -osrt -l ${lang || 'he'}`;
-            if (isTranslate) {
-                cmd += ' -tr'; // Add translate flag
-            }
-            
-            // whisper.cpp does not support -mw. We approximate words to chars (avg 6 chars per word)
-            // -sow ensures words are never chopped in half.
-            // -mc 0 (max context 0) is equivalent to condition_on_previous_text=False in python, preventing hallucinations and endless segments.
-            let maxLen = 42; // default unlimited (standard TV size)
-            if (maxWords && maxWords !== "0" && maxWords !== 0) {
-                maxLen = parseInt(maxWords) * 6;
-            }
-            cmd += ` -ml ${maxLen} -sow -mc 0`;
-            
-            child_process.exec(cmd, (error, stdout, stderr) => {
-                if (error) {
-                    reject(new Error("Transcription failed: " + error.message));
-                    return;
-                }
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i] && lines[i].includes('-->')) {
+            let parts = lines[i].split(' --> ');
+            if (parts.length === 2) {
+                let start = parseTime(parts[0]);
+                let end = parseTime(parts[1]);
                 
-                if (!fs.existsSync(srtOutputPath)) {
-                    reject(new Error("שגיאה במנוע ה-AI: קובץ הכתוביות לא נוצר."));
-                    return;
-                }
-                
-                try {
-                    if (fs.existsSync(srtOutputPath)) {
-                        let srtContent = fs.readFileSync(srtOutputPath, 'utf8');
-                        
-                        // Handle completely empty transcription
-                        if (srtContent.trim() === '') {
-                            srtContent = '1\n00:00:00,000 --> 00:00:02,000\n[לא זוהה דיבור]';
-                        }
-                        
-                        // Premiere Pro requires CRLF line endings for SRT
-                        srtContent = srtContent.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n');
-                        
-                        // Fix RTL punctuation, formatting, and dynamically CAP maximum duration to create gaps during silences
-                        const rtlRegex = /[\u0590-\u05FF]/; // basic Hebrew unicode range
-                        const punctRegex = /[.,!?;:"'`´‘’“”„‚«»‹›…()\[\]{}‐-―־׳״-]/g;
-                        const lines = srtContent.split('\r\n');
-                        
-                        function parseTime(timeStr) {
-                            const p = timeStr.split(':');
-                            const s = p[2].split(',');
-                            return parseInt(p[0])*3600 + parseInt(p[1])*60 + parseInt(s[0]) + parseInt(s[1])/1000;
-                        }
-                        function formatTime(seconds) {
-                            const h = Math.floor(seconds / 3600);
-                            const m = Math.floor((seconds % 3600) / 60);
-                            const s = Math.floor(seconds % 60);
-                            const ms = Math.floor((seconds % 1) * 1000);
-                            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
-                        }
-
-                        for (let i = 0; i < lines.length; i++) {
-                            // Detect timestamp line
-                            if (lines[i] && lines[i].includes('-->')) {
-                                let parts = lines[i].split(' --> ');
-                                if (parts.length === 2) {
-                                    let start = parseTime(parts[0]);
-                                    let end = parseTime(parts[1]);
-                                    
-                                    // Gather text for this segment to calculate reading time
-                                    let textLen = 0;
-                                    let j = i + 1;
-                                    while (j < lines.length && lines[j].trim() !== '' && !lines[j].includes('-->')) {
-                                        if (!lines[j].match(/^\d+$/)) { // Skip sequence number
-                                            textLen += lines[j].trim().length;
-                                        }
-                                        j++;
-                                    }
-                                    
-                                    // To make it feel more like TV series, we give a generous reading time.
-                                    // ~12 chars per second + 2.5 seconds buffer so it stays on screen during short silences.
-                                    let maxAllowedDuration = (textLen / 12) + 2.5;
-                                    // Hard cap at 7 seconds maximum (Netflix standard max)
-                                    maxAllowedDuration = Math.min(maxAllowedDuration, 7.0);
-                                    // Minimum 2 seconds so it doesn't flicker away too fast
-                                    maxAllowedDuration = Math.max(maxAllowedDuration, 2.0);
-                                    
-                                    if (end - start > maxAllowedDuration) {
-                                        end = start + maxAllowedDuration;
-                                        lines[i] = formatTime(start) + ' --> ' + formatTime(end);
-                                    }
-                                }
-                            }
-                            // Only apply to text lines (not sequence number, timestamp, or empty lines)
-                            else if (lines[i] && !lines[i].match(/^\d+$/) && !lines[i].includes('-->')) {
-                                if (stripPunctuation) {
-                                    lines[i] = lines[i].replace(punctRegex, ' ').replace(/[ \t]{2,}/g, ' ').trim();
-                                }
-                                if (rtlRegex.test(lines[i])) {
-                                    lines[i] = '\u202B' + lines[i] + '\u202C';
-                                }
-                            }
-                        }
-                        srtContent = lines.join('\r\n');
-                        
-                        // Premiere Pro requires UTF-8 BOM for Hebrew SRTs
-                        if (srtContent.charCodeAt(0) !== 0xFEFF) {
-                            srtContent = '\uFEFF' + srtContent;
-                        }
-                        
-                        fs.writeFileSync(srtOutputPath, srtContent, 'utf8');
+                let textLen = 0;
+                let j = i + 1;
+                while (j < lines.length && lines[j].trim() !== '' && !lines[j].includes('-->')) {
+                    if (!lines[j].match(/^\d+$/)) {
+                        textLen += lines[j].trim().length;
                     }
-                } catch (fixErr) {
-                    console.error("Failed to fix SRT encoding for Premiere:", fixErr);
+                    j++;
                 }
                 
-                // Delete the temporary WAV file to avoid cluttering the user's project folder
-                try {
-                    if (fs.existsSync(audioPath)) {
-                        fs.unlinkSync(audioPath);
-                    }
-                } catch (delErr) {
-                    console.error("Failed to delete temp wav:", delErr);
+                let maxAllowedDuration = (textLen / 12) + 2.5;
+                maxAllowedDuration = Math.min(maxAllowedDuration, 7.0);
+                maxAllowedDuration = Math.max(maxAllowedDuration, 2.0);
+                
+                if (end - start > maxAllowedDuration) {
+                    end = start + maxAllowedDuration;
+                    lines[i] = formatTime(start) + ' --> ' + formatTime(end);
                 }
-
-                statusCallback('מעבד קובץ כתוביות סופי...', 90);
-                resolve(srtOutputPath);
-            });
-
-        } catch (e) {
-            reject(e);
+            }
         }
-    });
+        else if (lines[i] && !lines[i].match(/^\d+$/) && !lines[i].includes('-->')) {
+            if (stripPunctuation) {
+                lines[i] = lines[i].replace(punctRegex, ' ').replace(/[ \t]{2,}/g, ' ').trim();
+            }
+            if (rtlRegex.test(lines[i])) {
+                lines[i] = '\u202B' + lines[i] + '\u202C';
+            }
+        }
+    }
+    srtContent = lines.join('\r\n');
+    
+    if (srtContent.charCodeAt(0) !== 0xFEFF) {
+        srtContent = '\uFEFF' + srtContent;
+    }
+    return srtContent;
+}
+
+window.nodeProcessAudio = async function(audioPath, modelName, hardwareMode, maxWords, stripPunctuation, lang, isTranslate, statusCallback) {
+    try {
+        if (isTranslate) {
+            modelName = 'ggml-medium.bin';
+        }
+
+        const exePath = await ensureWhisperCpp(hardwareMode, statusCallback);
+        const modelPath = await ensureModel(modelName, statusCallback);
+        
+        statusCallback('מתחיל תמלול מקומי בטכנולוגיית AI... אנא המתן', 75);
+        
+        const srtOutputPath = audioPath + ".srt";
+
+        let cmd = `"${exePath}" -m "${modelPath}" -f "${audioPath}" -osrt -l ${lang || 'he'}`;
+        if (isTranslate) {
+            cmd += ' -tr';
+        }
+        
+        let maxLen = 42;
+        if (maxWords && maxWords !== "0" && maxWords !== 0) {
+            maxLen = parseInt(maxWords) * 6;
+        }
+        cmd += ` -ml ${maxLen} -sow -mc 0`;
+        
+        try {
+            await execPromise(cmd);
+        } catch (error) {
+            throw new Error("Transcription failed: " + error.message);
+        }
+        
+        if (!fs.existsSync(srtOutputPath)) {
+            throw new Error("שגיאה במנוע ה-AI: קובץ הכתוביות לא נוצר.");
+        }
+        
+        try {
+            let srtContent = fs.readFileSync(srtOutputPath, 'utf8');
+            srtContent = formatSrtContent(srtContent, stripPunctuation);
+            fs.writeFileSync(srtOutputPath, srtContent, 'utf8');
+        } catch (fixErr) {
+            console.error("Failed to fix SRT encoding for Premiere:", fixErr);
+        }
+        
+        try {
+            if (fs.existsSync(audioPath)) {
+                fs.unlinkSync(audioPath);
+            }
+        } catch (delErr) {
+            console.warn("Failed to delete temp wav (might be locked by OS):", delErr.message);
+        }
+
+        statusCallback('מעבד קובץ כתוביות סופי...', 90);
+        return srtOutputPath;
+
+    } catch (e) {
+        throw e;
+    }
 };
 
 window.detectGPU = async function() {
