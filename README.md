@@ -14,6 +14,8 @@ An Adobe Premiere Pro extension that automatically generates highly accurate, pe
 - **Blazing Fast:** Fully utilizes your NVIDIA GPU via CUDA. What takes hours manually now takes seconds.
 - **Native Integration:** Injects subtitles straight into Premiere Pro's native Caption tracks, ready for immediate styling and export.
 - **Smart Engine:** Automatically exports the audio, runs the AI engine, generates SRT, and imports it back seamlessly.
+- **Auto-Recovery:** Smartly detects incomplete or corrupted model downloads (e.g. from network drops) and automatically repairs them.
+- **Minimalist Architecture:** Designed with "Ponytail" principles—clean, lightweight, and highly maintainable with robust error handling and zero silent failures.
 
 ## 🚀 Installation (Windows Only)
 
