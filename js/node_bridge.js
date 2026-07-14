@@ -254,6 +254,10 @@ window.nodeProcessAudio = async function(audioPath, modelName, hardwareMode, max
         try {
             await execPromise(cmd);
         } catch (error) {
+            if (error.message.includes("failed to load model") || error.message.includes("not all tensors loaded")) {
+                try { fs.unlinkSync(modelPath); } catch (e) {}
+                throw new Error("קובץ המודל המקומי זוהה כפגום ונמחק אוטומטית. אנא לחץ שוב על 'צור כתוביות' כדי להוריד אותו מחדש בצורה תקינה.");
+            }
             throw new Error("Transcription failed: " + error.message);
         }
         
