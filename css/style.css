@@ -400,3 +400,23 @@ footer {
         gap: 12px;
     }
 }
+
+/* Personal Dictionary */
+.dict-count { color: var(--accent); font-size: 12px; font-weight: 600; margin-inline-start: 4px; }
+.dict-add { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.dict-add input { flex: 1 1 auto; direction: rtl; text-align: right; background: var(--input-bg); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; padding: 6px 8px; font-size: 13px; }
+.dict-add button { flex: 0 0 auto; width: 38px; font-size: 18px; line-height: 1; padding: 6px 0; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; }
+.dict-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.dict-chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(14,165,233,0.14); border: 1px solid rgba(14,165,233,0.4); color: #e8e8ee; border-radius: 999px; padding: 3px 6px 3px 10px; font-size: 13px; }
+.dict-chip button { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 15px; line-height: 1; padding: 0 2px; }
+.dict-chip button:hover { color: #ff6b6b; }
+
+/* Emoji Slider */
+.emoji-toggle { display: flex; align-items: center; gap: 8px; margin: 2px 0 10px; cursor: pointer; font-size: 13.5px; }
+.emoji-toggle input { width: auto; margin: 0; accent-color: var(--accent); }
+.emoji-slider { display: flex; align-items: center; gap: 10px; }
+.emoji-slider input[type="range"] { flex: 1 1 auto; accent-color: var(--accent); margin: 0; }
+.emoji-slider-label { font-size: 12px; color: var(--text-muted); flex: 0 0 auto; }
+.emoji-actions { display: flex; gap: 6px; margin: 10px 0 6px; }
+.emoji-actions button { flex: 1 1 auto; font-size: 12.5px; padding: 6px 4px; background: transparent; color: var(--accent); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+.setup-note { color: var(--text-muted); font-size: 12px; margin: 4px 0 10px; text-align: right; line-height: 1.6; }

@@ -1,0 +1,15 @@
+# Files/directories to exclude from installer copy
+# Large binaries - downloaded on first run
+ext_bin_nvidia\
+ext_bin_v1.9.1_*
+ext_models\
+*.bin
+*.dll
+*.exe
+# Git files
+.git\
+.gitignore
+# Dev files
+README.md
+package.json
+.debug

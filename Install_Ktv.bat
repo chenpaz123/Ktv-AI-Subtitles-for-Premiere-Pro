@@ -7,14 +7,14 @@ echo ==========================================
 echo.
 echo Installing Ktv extension for Premiere Pro...
 
-set "EXT_DIR=%APPDATA%\Adobe\CEP\extensions\subli"
+set "EXT_DIR=%APPDATA%\Adobe\CEP\extensions\ktv"
 
 echo.
 echo [1/3] Creating extension directory...
 if not exist "%EXT_DIR%" mkdir "%EXT_DIR%"
 
-echo [2/3] Copying extension files...
-xcopy "%~dp0*" "%EXT_DIR%\" /E /I /H /Y >nul
+echo [2/3] Copying extension files (excluding large binaries)...
+xcopy "%~dp0*" "%EXT_DIR%\" /E /I /H /Y /EXCLUDE:%~dp0.xcopyignore >nul
 
 echo [3/3] Enabling Adobe Extension Mode (PlayerDebugMode)...
 for /L %%i in (10, 1, 18) do (
@@ -26,8 +26,11 @@ echo ==========================================
 echo SUCCESS! Ktv has been installed.
 echo ==========================================
 echo.
+echo The Python AI engine (faster-whisper) and language models will be
+echo installed automatically on first use (~2-4GB).
+echo.
 echo Please restart Premiere Pro (if it is open).
 echo You can find the extension inside Premiere under:
-echo Window -^> Extensions -^> Ktv - AI Subtitles
+echo Window -> Extensions -> Ktv - AI Subtitles
 echo.
 pause

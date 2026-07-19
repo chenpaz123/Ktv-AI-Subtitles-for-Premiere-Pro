@@ -1,6 +1,6 @@
 # Ktv - AI Subtitles for Premiere Pro 🎬
 
-An Adobe Premiere Pro extension that automatically generates highly accurate, perfectly synced subtitles directly on your timeline. Powered by **Whisper.cpp** and optimized with **Ivrit AI** models for unparalleled Hebrew accuracy.
+An Adobe Premiere Pro extension that automatically generates highly accurate, perfectly synced subtitles directly on your timeline. Powered by **Faster-Whisper** (Python backend) and optimized with **Ivrit AI** models for unparalleled Hebrew accuracy.
 
 ![Ktv Premiere Pro Plugin](https://img.shields.io/badge/Adobe%20Premiere%20Pro-Supported-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
@@ -12,9 +12,11 @@ An Adobe Premiere Pro extension that automatically generates highly accurate, pe
 - **Zero Cost:** Generate unlimited hours of transcription completely for free.
 - **Unbeatable Hebrew Accuracy:** Built-in integration with [Ivrit.ai](https://ivrit.ai)'s state-of-the-art V2 and V3 Turbo models.
 - **Blazing Fast:** Fully utilizes your NVIDIA GPU via CUDA. What takes hours manually now takes seconds.
+- **Custom Dictionary:** Teach the AI specific names, brands, or slang to guarantee perfect spelling every time!
+- **Auto Emojis:** Let the AI magically add relevant emojis to your subtitles based on the context of the sentence.
 - **Native Integration:** Injects subtitles straight into Premiere Pro's native Caption tracks, ready for immediate styling and export.
 - **Smart Engine:** Automatically exports the audio, runs the AI engine, generates SRT, and imports it back seamlessly.
-- **Auto-Recovery:** Smartly detects incomplete or corrupted model downloads (e.g. from network drops) and automatically repairs them.
+- **Cancel Support:** Stop long transcriptions midway with a click of a button if you made a mistake.
 - **Minimalist Architecture:** Designed with "Ponytail" principles—clean, lightweight, and highly maintainable with robust error handling and zero silent failures.
 
 ## 🚀 Installation (Windows Only)
@@ -38,19 +40,21 @@ An Adobe Premiere Pro extension that automatically generates highly accurate, pe
    - **Whisper Large V3 Turbo:** Best for English and general languages.
    - **English Translation:** Automatically translates Hebrew speech into English subtitles.
 4. Set your preference for "Words per line" (e.g., 2 words per line is great for Shorts/TikToks).
-5. Click **"✨ צור כתוביות" (Generate)**!
+5. Customize: Add specific words to the dictionary, or enable Auto Emojis.
+6. Click **"✨ צור כתוביות" (Generate)**!
 
-> **Note:** The first time you select a new model, the plugin will automatically download it in the background (1.5GB - 3GB). It will be saved permanently on your machine for instant use next time.
+> **Note:** The very first time you click Generate, the plugin will automatically install the local Python environment, CUDA libraries, and download the AI models in the background (~2-4GB). This only happens once.
 
 ## ⚙️ System Requirements
 
 - **OS:** Windows 10 / Windows 11
 - **Software:** Adobe Premiere Pro (CC 2020 and newer)
-- **GPU:** NVIDIA Graphics Card heavily recommended (The included engine is pre-compiled with CUDA support for massive speed boosts). It will fallback to CPU if no NVIDIA GPU is detected, but will run significantly slower.
+- **GPU:** NVIDIA Graphics Card heavily recommended (The included engine uses CUDA for massive speed boosts). It will fallback to CPU if no NVIDIA GPU is detected, but will run significantly slower.
 
 ## 🙏 Acknowledgements
 
-- [whisper.cpp](https://github.com/ggerganov/whisper.cpp) by Georgi Gerganov - The blazing-fast C++ engine that powers this extension.
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper) - The blazing-fast Python engine that powers this extension.
+- [stable-ts](https://github.com/jianfch/stable-ts) - For reliable word-level timestamps and subtitle generation.
 - [Ivrit.ai](https://huggingface.co/ivrit-ai) - For developing and open-sourcing the incredible Hebrew-optimized language models.
 
 ---

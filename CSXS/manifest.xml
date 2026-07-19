@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="11.0" ExtensionBundleId="com.subli.extension" ExtensionBundleVersion="1.0.0"
+<ExtensionManifest Version="11.0" ExtensionBundleId="com.ktv.extension" ExtensionBundleVersion="1.0.0"
     ExtensionBundleName="Ktv" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <ExtensionList>
-        <Extension Id="com.subli.extension.panel" Version="1.0.0" />
+        <Extension Id="com.ktv.extension.panel" Version="1.0.0" />
     </ExtensionList>
     <ExecutionEnvironment>
         <HostList>
@@ -17,7 +17,7 @@
         </RequiredRuntimeList>
     </ExecutionEnvironment>
     <DispatchInfoList>
-        <Extension Id="com.subli.extension.panel">
+        <Extension Id="com.ktv.extension.panel">
             <DispatchInfo>
                 <Resources>
                     <MainPath>./index.html</MainPath>

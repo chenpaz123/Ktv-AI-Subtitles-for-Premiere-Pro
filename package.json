@@ -1,7 +1,7 @@
 {
-  "name": "subli-premiere-extension",
+  "name": "ktv-premiere-extension",
   "version": "1.0.0",
-  "description": "Subli - Offline AI Subtitles for Premiere Pro",
+  "description": "Ktv - Offline AI Subtitles for Premiere Pro",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -74,6 +74,43 @@
                 </div>
             </div>
         </div>
+        <div class="card settings-card" id="emojiCard">
+            <div class="accordion-header" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
+                <span>😀 אימוג'ים אוטומטיים <span id="emojiState" class="dict-count"></span></span>
+                <span class="arrow">◀</span>
+            </div>
+            <div class="accordion-content">
+                <div class="setup-note" id="emojiDesc" style="margin-bottom:8px">מוסיף אימוג'י צבעוני שמתאים להקשר כקליפ קטן מעל הכתוביות. אפשר להזיז, לשנות גודל או למחוק כל אחד בטיימליין.</div>
+                <label class="emoji-toggle"><input type="checkbox" id="emojiOn"> <span>הפעלת אימוג'ים</span></label>
+                <div class="emoji-slider" id="emojiSliderWrap">
+                    <span class="emoji-slider-label">הרבה</span>
+                    <input type="range" id="emojiLevel" min="0" max="49" step="1" value="25" dir="ltr">
+                    <span class="emoji-slider-label">מעט</span>
+                </div>
+                <div class="setup-note" id="emojiHint" style="opacity:.7"></div>
+                <div class="emoji-actions" id="emojiActions">
+                    <button id="emojiTargetBtn" class="btn-secondary">📍 בחירת מיקום</button>
+                    <button id="emojiApplyBtn" class="btn-secondary">✅ החל מיקום על הכל</button>
+                </div>
+                <div class="setup-note" id="emojiLocNote" style="opacity:.7">האימוג'ים לא במקום הנכון? לוחצים "בחירת מיקום" - נוסיף 🎯 לטיימליין. גררו אותו במסך לאן שתרצו, ואז "החל מיקום על הכל". המיקום נשמר גם לתמלולים הבאים.</div>
+            </div>
+        </div>
+
+        <div class="card settings-card" id="dictCard">
+            <div class="accordion-header" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
+                <span>📖 מילון אישי <span id="dictCount" class="dict-count"></span></span>
+                <span class="arrow">◀</span>
+            </div>
+            <div class="accordion-content">
+                <div class="setup-note" style="margin-bottom:8px">שמות, מותגים, סלנגים - תנו למודל לדעת מראש אילו מילים מיוחדות הוא הולך לפגוש. Ktv תזהה מתי הוא ניסה להגיד אותן ותתקן אוטומטית. תרגישו חופשי לפרט.</div>
+                <div class="dict-add">
+                    <input id="dictInput" placeholder="למשל: יומלדת -> יום הולדת" autocomplete="off">
+                    <button id="dictAdd" title="הוסף">＋</button>
+                </div>
+                <div id="dictList" class="dict-list"></div>
+                <div class="setup-note" id="dictEmpty" style="opacity:.7">עדיין ריק - הוסיפו את המילה הראשונה.</div>
+            </div>
+        </div>
 
         <div class="card settings-card">
             <div class="accordion-header" id="settings-toggle">
